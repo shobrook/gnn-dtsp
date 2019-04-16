@@ -20,19 +20,19 @@ def create_random_graph(node_range=(5, 9), prob=0.25, weight_range=(1, 10)):
     G = nx.complete_graph(n_nodes)
     H = G.copy()
     for u, v, w in G.edges(data=True):
-        u_deg, v_deg = H.degree(u), H.degree(v)
-        if u_deg - 1 >= n_nodes / 2 and v_deg - 1 >= n_nodes / 2:
-            if rand.random() < prob:
-                H.remove_edge(u, v)
-            else:
-                H[u][v]["weight"] = rand.randint(*weight_range)
+        H[u][v]["weight"] = rand.randint(*weight_range)
+
+        # u_deg, v_deg = H.degree(u), H.degree(v)
+        # if u_deg - 1 >= n_nodes / 2 and v_deg - 1 >= n_nodes / 2:
+        #     if rand.random() < prob:
+        #         H.remove_edge(u, v)
 
     return H
 
 
 def solve_tsp(graph):
-    adj_matrix = nx.to_numpy_matrix(graph)
-    hamil_path = solve(adj_matrix)
+    adj_matrix = nx.adjacency_matrix(graph)
+    hamil_path = solve(adj_matrix.todense().tolist())
 
     path_edges = [(hamil_path[i], hamil_path[i + 1])
                   for i in range(len(hamil_path) - 1)]
@@ -40,7 +40,7 @@ def solve_tsp(graph):
 
     for u, v in graph.edges():
         graph[u][v]["solution"] = int(
-            any(u == src and v == targ for src, targ in path_edges))
+            any({u, v}.issubset({src, targ}) for src, targ in path_edges))
 
     return graph
 
@@ -65,6 +65,6 @@ def visualize_network(G, filename, dpi=1000):
 
 if __name__ == "__main__":
     G = create_random_graph()
-    visualize_network(G, "original_graph")
+    visualize_network(G, "test_G")
     solved_G = solve_tsp(G)
-    visualize_network(solved_G, "solved_graph")
+    visualize_network(solved_G, "test_solved_G")
