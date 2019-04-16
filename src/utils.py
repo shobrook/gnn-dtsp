@@ -1,35 +1,65 @@
+#########
+# GLOBALS
+#########
+
+
 import networkx as nx
 import random as rand
-from tsp_solver.greedy import solve_tsp
+import matplotlib.pyplot as plt
+from tsp_solver.greedy import solve_tsp as solve
 
-def create_random_graph(node_range=(5, 9), prob=0.25, weight_range=(0, 10)):
+
+#########
+# HELPERS
+#########
+
+
+def create_random_graph(node_range=(5, 9), prob=0.25, weight_range=(1, 10)):
     n_nodes = rand.randint(*node_range)
 
     G = nx.complete_graph(n_nodes)
+    H = G.copy()
     for u, v, w in G.edges(data=True):
-        u_deg, v_deg = G.degree(u), G.degree(v)
-        if u_deg - 1 >= n_nodes / 2 and v_deg - 1 >= n_nodes / 2:
-            if rand.random() < prob:
-                G.remove_edge(u, v)
-            else:
-                w["weight"] = rand.randint(*weight_range)
+        H[u][v]["weight"] = rand.randint(*weight_range)
 
-    return G
+        # u_deg, v_deg = H.degree(u), H.degree(v)
+        # if u_deg - 1 >= n_nodes / 2 and v_deg - 1 >= n_nodes / 2:
+        #     if rand.random() < prob:
+        #         H.remove_edge(u, v)
 
-def get_tsp_solution(graph):
-    adj_matrix = nx.to_numpy_matrix(graph)
-    return solve_tsp(adj_matrix) # Returns list of vertex indices
+    return H
 
-    # TODO: Return networkx graph with labeled edges
 
-def create_example(graph):
-    pass
+def solve_tsp(graph):
+    adj_matrix = nx.adjacency_matrix(graph)
+    hamil_path = solve(adj_matrix.todense().tolist())
 
-def create_dataset(n_examples=20000):
-    inputs, targets = [], []
-    for _ in range(n_examples):
-        input_graph = create_random_graph()
-        target_graph = get_tsp_solution(input_graph)
+    path_edges = [(hamil_path[i], hamil_path[i + 1])
+                  for i in range(len(hamil_path) - 1)]
+    path_edges.append((hamil_path[-1], hamil_path[0]))
 
-        inputs.append(input_graph)
-        targets.append(target_graph)
+    for u, v in graph.edges():
+        graph[u][v]["solution"] = int(
+            any({u, v}.issubset({src, targ}) for src, targ in path_edges))
+
+    return graph
+
+
+def visualize_network(G, filename, dpi=1000):
+    pos = nx.spring_layout(G)
+    edge_labels = nx.get_edge_attributes(G, "solution")
+
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
+    nx.draw(G, pos)
+
+    plt.savefig("../figures/" + filename, dpi=dpi)
+    plt.close()
+
+
+#########
+# EXPORTS
+#########
+
+
+# NOTE: Functions that will be used in other modules should be defined here for
+# sake of keeping organized
