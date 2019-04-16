@@ -61,10 +61,5 @@ def visualize_network(G, filename, dpi=1000):
 #########
 
 
-# TODO: Put things here
-
-if __name__ == "__main__":
-    G = create_random_graph()
-    visualize_network(G, "test_G")
-    solved_G = solve_tsp(G)
-    visualize_network(solved_G, "test_solved_G")
+# NOTE: Functions that will be used in other modules should be defined here for
+# sake of keeping organized
