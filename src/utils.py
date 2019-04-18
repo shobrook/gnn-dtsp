@@ -6,6 +6,7 @@ from __future__ import division
 from __future__ import print_function
 
 from graph_nets import utils_tf
+from graph_nets import utils_np
 
 import numpy as np
 import networkx as nx
@@ -166,6 +167,19 @@ def create_dataset(n_examples=20000):
 
         inputs.append(input_graph)
         targets.append(target_graph)
+
+def make_all_runnable_in_session(*args):
+    """Lets an iterable of TF graphs be output from a session as NP graphs."""
+    return [utils_tf.make_runnable_in_session(a) for a in args]
+
+def create_feed_dict(num_graphs, input_ph, target_ph):
+    """Creates placeholders for the model training and evaluation."""
+
+    inputs, targets, raw_graphs = generate_networkx_graphs(num_graphs)
+    input_graphs = utils_np.networkxs_to_graphs_tuple(inputs)
+    target_graphs = utils_np.networkxs_to_graphs_tuple(targets)
+    feed_dict = {input_ph: input_graphs, target_ph: target_graphs}
+    return feed_dict, raw_graphs
 
 # NOTE: Functions that will be used in other modules should be defined here for
 # sake of keeping organized
