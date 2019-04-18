@@ -7,6 +7,7 @@ from __future__ import print_function
 
 from graph_nets import utils_tf
 
+import numpy as np
 import networkx as nx
 import random as rand
 import matplotlib.pyplot as plt
@@ -46,6 +47,17 @@ def solve_tsp(graph):
         graph[u][v]["solution"] = int(
             any({u, v}.issubset({src, targ}) for src, targ in path_edges))
 
+    solution_dict = {}
+
+    for v in graph.nodes():
+        solution_dict[v] = False
+
+    for u, v in path_edges:
+        solution_dict[u] = True
+        solution_dict[v] = True
+
+    nx.set_node_attributes(graph, solution_dict, "solution")
+
     return graph
 
 
@@ -79,18 +91,21 @@ def graph_to_input_target(graph):
     def create_feature(attr, fields):
         return np.hstack([np.array(attr[field], dtype=float) for field in fields])
 
-    #input_node_fields = ("solution",)
+    input_node_fields = ("solution",)
     input_edge_fields = ("weight",)
-    #target_node_fields = ("solution",)
+    target_node_fields = ("solution",)
     target_edge_fields = ("solution",)
 
     input_graph = graph.copy()
     target_graph = graph.copy()
 
     solution_length = 0
-    for node_index in graph.nodes():
-        input_graph.add_node(node_index)
-        target_graph.add_node(node_index)
+    for node_index, node_feature in graph.nodes(data=True):
+        input_graph.add_node(
+            node_index, features=create_feature(node_feature, input_node_fields))
+        target_node = to_one_hot(
+            create_feature(node_feature, target_node_fields).astype(int), 2)[0]
+        target_graph.add_node(node_index, features=target_node)
 
     for receiver, sender, features in graph.edges(data=True):
         input_graph.add_edge(
@@ -129,7 +144,7 @@ def generate_networkx_graphs(num_graphs, node_range=(5, 9), prob=0.25, weight_ra
 
     for i in range(num_graphs):
         graph = create_random_graph(node_range, prob, weight_range)
-        graph = get_tsp_solution(graph)
+        graph = solve_tsp(graph)
         input_graph, target_graph = graph_to_input_target(graph)
         input_graphs.append(input_graph)
         target_graphs.append(target_graph)
