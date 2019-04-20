@@ -1,9 +1,7 @@
 #########
 # GLOBALS
 #########
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+
 
 from graph_nets import utils_tf
 from graph_nets import utils_np
@@ -48,11 +46,7 @@ def solve_tsp(graph):
         graph[u][v]["solution"] = int(
             any({u, v}.issubset({src, targ}) for src, targ in path_edges))
 
-    solution_dict = {}
-
-    for v in graph.nodes():
-        solution_dict[v] = False
-
+    solution_dict = {v: False for v in graph.nodes()}
     for u, v in path_edges:
         solution_dict[u] = True
         solution_dict[v] = True
@@ -72,11 +66,13 @@ def visualize_network(G, filename, dpi=1000):
     plt.savefig("../figures/" + filename, dpi=dpi)
     plt.close()
 
+
 def to_one_hot(indices, max_value, axis=-1):
     one_hot = np.eye(max_value)[indices]
     if axis not in (-1, one_hot.ndim):
         one_hot = np.moveaxis(one_hot, -1, axis)
     return one_hot
+
 
 def graph_to_input_target(graph):
     """Returns 2 graphs with input and target feature vectors for training.
@@ -120,9 +116,12 @@ def graph_to_input_target(graph):
     target_graph.graph["features"] = np.array([solution_length], dtype=float)
 
     return input_graph, target_graph
+
+
 #########
 # EXPORTS
 #########
+
 
 def generate_networkx_graphs(num_graphs, node_range=(5, 9), prob=0.25, weight_range=(1, 10)):
     """Generate graphs for training.
@@ -153,24 +152,30 @@ def generate_networkx_graphs(num_graphs, node_range=(5, 9), prob=0.25, weight_ra
 
     return input_graphs, target_graphs, graphs
 
+
 def create_placeholders(num_graphs):
     input_graphs, target_graphs, _ = generate_networkx_graphs(num_graphs)
     input_ph = utils_tf.placeholders_from_networkxs(input_graphs)
     target_ph = utils_tf.placeholders_from_networkxs(target_graphs)
     return input_ph, target_ph
 
+
 def create_dataset(n_examples=20000):
     inputs, targets = [], []
     for _ in range(n_examples):
         input_graph = create_random_graph()
-        target_graph = get_tsp_solution(input_graph)
+        target_graph = solve_tsp(input_graph)
 
         inputs.append(input_graph)
         targets.append(target_graph)
 
+    return zip(inputs, targets)
+
+
 def make_all_runnable_in_session(*args):
     """Lets an iterable of TF graphs be output from a session as NP graphs."""
     return [utils_tf.make_runnable_in_session(a) for a in args]
+
 
 def create_feed_dict(num_graphs, input_ph, target_ph):
     """Creates placeholders for the model training and evaluation."""
