@@ -93,6 +93,11 @@ def graph_to_input_target(graph):
     target_node_fields = ("solution",)
     target_edge_fields = ("solution",)
 
+    # input_node_fields = "solution"
+    # input_edge_fields = "weight"
+    # target_node_fields = "solution"
+    # target_edge_fields = "solution"
+
     input_graph = graph.copy()
     target_graph = graph.copy()
 

@@ -7,12 +7,11 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from utils import *
+from utils2 import *
 import tensorflow as tf
 import numpy as np
 import pandas as pd
 import time
-import pickle
 
 from graph_nets.demos import models
 
@@ -23,10 +22,17 @@ from graph_nets.demos import models
 
 
 def create_loss_ops(target_op, output_ops):
+
     return [
-        tf.losses.softmax_cross_entropy(target_op.edges, output_op.edges)
+        tf.losses.mean_squared_error(target_op.globals, output_op.globals)
         for output_op in output_ops
     ]
+
+    # return [
+    #     tf.losses.mean_squared_error(target_op.globals, output_op.globals)
+    #     * tf.losses.softmax_cross_entropy(target_op.edges, output_op.edges)
+    #     for output_op in output_ops
+    # ]
 
 
 def compute_accuracy(target, output, use_nodes=True, use_edges=False):
@@ -72,15 +78,18 @@ num_processing_steps_tr = 10
 num_processing_steps_ge = 10
 
 # Data / training parameters
-num_training_iterations = 1
-batch_size_tr = 400
+num_training_iterations = 500
+batch_size_tr = 32
 batch_size_ge = 100
 
 # Input and target placeholders
 input_ph, target_ph = create_placeholders(batch_size_tr)
 
 # Connect the data to the model and instantiate
-model = models.EncodeProcessDecode(edge_output_size=2, node_output_size=2)
+model = models.EncodeProcessDecode(edge_output_size=2, node_output_size=2, global_output_size=1)
+# model = models.EncodeProcessDecode(edge_output_size=1, node_output_size=1, global_output_size=1)
+# model = models.EncodeProcessDecode(edge_output_size=1, global_output_size=1)
+
 # A list of outputs, one per processing step
 output_ops_tr = model(input_ph, num_processing_steps_tr)
 output_ops_ge = model(input_ph, num_processing_steps_ge)
@@ -155,10 +164,6 @@ for iteration in range(last_iteration, num_training_iterations):
     }, feed_dict=feed_dict)
     the_time = time.time()
     elapsed_since_last_log = the_time - last_log_time
-
-    # print(train_values)
-    pickle.save(open("train_vals{}.pkl".format(iteration), train_values)
-
     if elapsed_since_last_log > log_every_seconds:
         last_log_time = the_time
         feed_dict, raw_graphs = create_feed_dict(
@@ -190,4 +195,4 @@ out_df = pd.DataFrame(np.array([logged_iterations, losses_tr, losses_ge,
     corrects_tr, solveds_tr, corrects_ge, solveds_ge]).T,
     columns=["iteration", "loss_tr", "loss_ge", "correct_tr", "solved_tr",
         "correct_ge", "solved_ge"])
-out_df.to_pickle('softmax_ce_loss.pkl')
+out_df.to_pickle('test.pkl')
