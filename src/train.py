@@ -72,7 +72,7 @@ num_processing_steps_tr = 10
 num_processing_steps_ge = 10
 
 # Data / training parameters
-num_training_iterations = 1
+num_training_iterations = 25000
 batch_size_tr = 400
 batch_size_ge = 100
 
