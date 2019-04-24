@@ -72,8 +72,8 @@ num_processing_steps_tr = 10
 num_processing_steps_ge = 10
 
 # Data / training parameters
-num_training_iterations = 25000
-batch_size_tr = 400
+num_training_iterations = 100
+batch_size_tr = 32
 batch_size_ge = 100
 
 # Input and target placeholders
@@ -157,7 +157,8 @@ for iteration in range(last_iteration, num_training_iterations):
     elapsed_since_last_log = the_time - last_log_time
 
     # print(train_values)
-    pickle.save(open("train_vals{}.pkl".format(iteration), train_values)
+    # with open("../figures/pickles/train_vals{}.pkl".format(iteration), "wb") as train_val_file:
+    #     pickle.dump(train_values, train_val_file)
 
     if elapsed_since_last_log > log_every_seconds:
         last_log_time = the_time
@@ -186,8 +187,75 @@ for iteration in range(last_iteration, num_training_iterations):
                   iteration, elapsed, train_values["loss"], test_values["loss"],
                   correct_tr, solved_tr, correct_ge, solved_ge))
 
+# saver = tf.train.Saver()
+# saver.save(sess, "\model.ckpt")
+
 out_df = pd.DataFrame(np.array([logged_iterations, losses_tr, losses_ge,
     corrects_tr, solveds_tr, corrects_ge, solveds_ge]).T,
     columns=["iteration", "loss_tr", "loss_ge", "correct_tr", "solved_tr",
         "correct_ge", "solved_ge"])
-out_df.to_pickle('softmax_ce_loss.pkl')
+out_df.to_pickle('so1ftmax_ce_loss.pkl')
+
+# Plot results curves.
+fig = plt.figure(1, figsize=(18, 3))
+fig.clf()
+x = np.array(logged_iterations)
+# Loss.
+y_tr = losses_tr
+y_ge = losses_ge
+ax = fig.add_subplot(1, 3, 1)
+ax.plot(x, y_tr, "k", label="Training")
+ax.plot(x, y_ge, "k--", label="Test/generalization")
+ax.set_title("Loss across training")
+ax.set_xlabel("Training iteration")
+ax.set_ylabel("Loss (binary cross-entropy)")
+ax.legend()
+# Correct.
+y_tr = corrects_tr
+y_ge = corrects_ge
+ax = fig.add_subplot(1, 3, 2)
+ax.plot(x, y_tr, "k", label="Training")
+ax.plot(x, y_ge, "k--", label="Test/generalization")
+ax.set_title("Fraction correct across training")
+ax.set_xlabel("Training iteration")
+ax.set_ylabel("Fraction nodes/edges correct")
+# Solved.
+y_tr = solveds_tr
+y_ge = solveds_ge
+ax = fig.add_subplot(1, 3, 3)
+ax.plot(x, y_tr, "k", label="Training")
+ax.plot(x, y_ge, "k--", label="Test/generalization")
+ax.set_title("Fraction solved across training")
+ax.set_xlabel("Training iteration")
+ax.set_ylabel("Fraction examples solved")
+plt.savefig("../figures/plots.png", dpi=1000)
+
+
+# validation on fully trained model
+batch_size_v = 1000
+num_processing_steps_v = 10
+
+input_ph_v, target_ph_v = create_placeholders(batch_size_v)
+
+output_ops_v = model(input_ph_v, num_processing_steps_v)
+
+loss_ops_v = create_loss_ops(target_ph_v, output_ops_v)
+loss_op_v = loss_ops_v[-1]
+
+input_ph_v, target_ph_v = make_all_runnable_in_session(input_ph_v, target_ph_v)
+
+feed_dict_v, raw_graphs_v = create_feed_dict(batch_size_v, input_ph_v, target_ph_v)
+validation_values = sess.run({
+    "target": target_ph_v,
+    "loss": loss_op_v,
+    "outputs": output_ops_v
+},
+    feed_dict=feed_dict_v)
+correct_v, solved_v = compute_accuracy(
+    validation_values["target"], validation_values["outputs"][-1], use_edges=True)
+loss_v = validation_values["loss"]
+
+# validation statistics
+print(loss_v)
+print(correct_v)
+print(solved_v)
