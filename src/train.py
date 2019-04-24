@@ -187,8 +187,9 @@ for iteration in range(last_iteration, num_training_iterations):
                   iteration, elapsed, train_values["loss"], test_values["loss"],
                   correct_tr, solved_tr, correct_ge, solved_ge))
 
-# saver = tf.train.Saver()
-# saver.save(sess, "\model.ckpt")
+# save model
+saver = tf.train.Saver()
+saver.save(sess, "./model.ckpt")
 
 out_df = pd.DataFrame(np.array([logged_iterations, losses_tr, losses_ge,
     corrects_tr, solveds_tr, corrects_ge, solveds_ge]).T,
@@ -254,6 +255,11 @@ validation_values = sess.run({
 correct_v, solved_v = compute_accuracy(
     validation_values["target"], validation_values["outputs"][-1], use_edges=True)
 loss_v = validation_values["loss"]
+
+# save validation stuffs
+pickle.dump(feed_dict_v, "../figures/pickles/feed_dict_v.pkl")
+pickle.dump(raw_graphs_v, "../figures/pickles/raw_graphs_v.pkl")
+pickle.dump(validation_values, "../figures/pickles/validation_values.pkl")
 
 # validation statistics
 print(loss_v)
