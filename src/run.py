@@ -195,7 +195,7 @@ test_loss_op = test_loss_ops[-1]
 test_input_ph, test_target_ph = utils.make_all_runnable_in_session(
     test_input_ph, test_target_ph)
 
-test_feed_dict, test_raw_graphs = utils.create_feed_dict(
+test_feed_dict, test_input_graphs = utils.create_feed_dict(
     test_batch_size, test_input_ph, test_target_ph)
 test_values = sess.run({
     "target": test_target_ph,
@@ -222,6 +222,7 @@ train_stats.to_pickle("../data/pickles/train_stats.pkl")
 
 # Store the test results
 pickle.dump({
-    "outputs": [utils_np.graphs_tuple_to_networkxs(graphs_tuple) for graphs_tuple in test_values["outputs"]][-1],
-    "targets": utils_np.graphs_tuple_to_networkxs(test_values["target"])
+    "outputs": utils_np.graphs_tuple_to_networkxs(test_values["outputs"][-1]),
+    "targets": utils_np.graphs_tuple_to_networkxs(test_values["target"]),
+    "inputs": test_input_graphs,
 }, open("../data/pickles/test_results.pkl", "wb"))
