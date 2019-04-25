@@ -166,4 +166,4 @@ def create_feed_dict(num_graphs, input_ph, target_ph):
     target_graphs = utils_np.networkxs_to_graphs_tuple(targets)
     feed_dict = {input_ph: input_graphs, target_ph: target_graphs}
 
-    return feed_dict, raw_graphs
+    return feed_dict, inputs
