@@ -12,7 +12,7 @@ from graph_nets import utils_np
 from graph_nets.demos import models
 
 # Local modules
-import utilities as utils
+import utils
 
 
 #########
