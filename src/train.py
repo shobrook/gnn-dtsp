@@ -233,7 +233,7 @@ plt.savefig("../figures/plots.png", dpi=1000)
 
 
 # validation on fully trained model
-batch_size_v = 1000
+batch_size_v = 2
 num_processing_steps_v = 10
 
 input_ph_v, target_ph_v = create_placeholders(batch_size_v)
@@ -255,6 +255,10 @@ validation_values = sess.run({
 correct_v, solved_v = compute_accuracy(
     validation_values["target"], validation_values["outputs"][-1], use_edges=True)
 loss_v = validation_values["loss"]
+
+print(validation_values["outputs"])
+
+print(utils_np.graphs_tuple_to_networkxs(validation_values["outputs"]))
 
 # save validation stuffs
 pickle.dump(feed_dict_v, "../figures/pickles/feed_dict_v.pkl")
