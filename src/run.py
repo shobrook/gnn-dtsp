@@ -68,9 +68,9 @@ num_processing_steps_tr = 10
 num_processing_steps_ge = 10
 
 # Data / training parameters
-num_training_iterations = 100
-batch_size_tr = 32
-batch_size_ge = 100
+num_training_iterations = 2000
+batch_size_tr = 2000
+batch_size_ge = 500
 
 # Input and target placeholders
 input_ph, target_ph = utils.create_placeholders(batch_size_tr)
