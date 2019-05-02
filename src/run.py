@@ -68,9 +68,9 @@ num_processing_steps_tr = 10
 num_processing_steps_ge = 10
 
 # Data / training parameters
-num_training_iterations = 2000
+num_training_iterations = 5000
 batch_size_tr = 2000
-batch_size_ge = 500
+batch_size_ge = 1000
 
 # Input and target placeholders
 input_ph, target_ph = utils.create_placeholders(batch_size_tr)
@@ -90,7 +90,7 @@ loss_ops_ge = create_loss_ops(target_ph, output_ops_ge)
 loss_op_ge = loss_ops_ge[-1]  # Loss from final processing step
 
 # Optimizer
-learning_rate = 1e-3
+learning_rate = 1.3e-3
 optimizer = tf.train.AdamOptimizer(learning_rate)
 step_op = optimizer.minimize(loss_op_tr)
 
