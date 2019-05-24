@@ -117,7 +117,7 @@ loss_ops_tr = create_loss_ops(target_ph, output_ops_tr)
 # loss_op_tr = sum(loss_ops_tr) / num_processing_steps_tr
 
 # Optimizer
-learning_rate = 1e-3
+learning_rate = 1.3e-3
 optimizer = tf.train.AdamOptimizer(learning_rate)
 step_op = optimizer.minimize(loss_ops_tr)  # optimizer.minimize(loss_op_tr)
 
